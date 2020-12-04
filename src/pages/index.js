@@ -9,32 +9,37 @@ import Layout from '../components/Layout'
 
 const StoreIndex = ({location}) => {
   const data = useStaticQuery(graphql`
-    query IndexQuery {
+    {
       site {
         siteMetadata {
           title
         }
       }
-      allMoltinProduct {
-        edges {
-          node {
-            id
-            name
+      vendure {
+        search(input: {groupByProduct: true, take: 10}) {
+          items {
+            productId
+            productName
             description
-            mainImageHref
-            meta {
-              display_price {
-                with_tax {
-                  amount
-                  currency
-                  formatted
-                }
+            slug
+            currencyCode
+            price {
+              ... on Vendure_PriceRange {
+                min
+                max
+              }
+              ... on Vendure_SinglePrice {
+                value
               }
             }
-            mainImage {
-              childImageSharp {
-                sizes(maxWidth: 600) {
-                  ...GatsbyImageSharpSizes
+            productPreview
+            productAsset {
+              preview
+              imageFile {
+                childImageSharp {
+                  sizes(maxWidth: 600, maxHeight: 600, fit: COVER) {
+                    ...GatsbyImageSharpSizes
+                  }
                 }
               }
             }
@@ -44,9 +49,12 @@ const StoreIndex = ({location}) => {
     }
   `)
 
+  console.log(data)
+
   const siteTitle = get(data, 'site.siteMetadata.title')
-  const products = get(data, 'allMoltinProduct.edges')
-  const filterProductsWithoutImages = products.filter(v => v.node.mainImageHref)
+  const products = get(data, 'vendure.search.items')
+  const filterProductsWithoutImages = products.filter(v => v.productPreview)
+
   return (
     <Layout location={location}>
       <SEO title={siteTitle} />

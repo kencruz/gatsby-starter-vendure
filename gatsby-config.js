@@ -12,6 +12,17 @@ module.exports = {
   pathPrefix: '/gatsby-starter-ecommerce',
   plugins: [
     {
+      resolve: 'gatsby-source-graphql',
+      options: {
+        // This type will contain remote schema Query type
+        typeName: 'Vendure',
+        // This is field under which it's accessible
+        fieldName: 'vendure',
+        // Url to query from
+        url: 'https://demo.vendure.io/shop-api',
+      },
+    },
+    {
       resolve: '@moltin/gatsby-source-moltin',
       options: {
         client_id:
