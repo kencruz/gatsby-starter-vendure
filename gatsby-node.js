@@ -11,10 +11,10 @@ exports.createPages = ({graphql, actions}) => {
       graphql(
         `
           {
-            allMoltinProduct {
-              edges {
-                node {
-                  id
+            vendure {
+              search(input: {groupByProduct: true}) {
+                items {
+                  productId
                 }
               }
             }
@@ -25,12 +25,12 @@ exports.createPages = ({graphql, actions}) => {
           console.log(result.errors)
           reject(result.errors)
         }
-        result.data.allMoltinProduct.edges.forEach(edge => {
+        result.data.vendure.search.items.forEach(item => {
           createPage({
-            path: `/product/${edge.node.id}/`,
+            path: `/product/${item.productId}/`,
             component: productPageTemplate,
             context: {
-              id: edge.node.id,
+              id: item.productId,
             },
           })
         })
