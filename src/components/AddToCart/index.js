@@ -1,10 +1,10 @@
 import React, {useState, useContext} from 'react'
-import {Input, Icon, Transition} from 'semantic-ui-react'
+import {Dropdown, Input, Icon, Transition} from 'semantic-ui-react'
 import CartContext from '../Context/CartContext'
 
 const Moltin = require('../../../lib/moltin')
 
-const AddToCart = ({productId}) => {
+const AddToCart = ({productId, variants}) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [quantity, setQuantity] = useState(1)
@@ -16,6 +16,14 @@ const AddToCart = ({productId}) => {
       setVisible(false)
     }, 1000)
   }
+
+  const varientOptions = variants.map(v => {
+    return {
+      key: v.id,
+      text: v.name,
+      value: v.id,
+    }
+  })
 
   const validate = quantity => {
     let error
@@ -53,6 +61,13 @@ const AddToCart = ({productId}) => {
 
   return (
     <>
+      <Dropdown
+        placeholder="Select Varient"
+        selection
+        options={varientOptions}
+        defaultValue={varientOptions[0].value}
+      />
+
       <Input
         type="number"
         placeholder="Quantity"
