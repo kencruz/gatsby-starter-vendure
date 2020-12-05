@@ -1,13 +1,16 @@
 /* eslint-disable camelcase */
 import React, {useState, useContext} from 'react'
-import {useQuery} from '@apollo/react-hooks'
+import {useQuery, useMutation} from '@apollo/react-hooks'
 import SEO from '../components/SEO'
 import CartItemList from '../components/CartItemList'
 import CartSummary from '../components/CartSummary'
 import CartContext from '../components/Context/CartContext'
 import Layout from '../components/Layout'
 
-import {GET_ACTIVE_ORDER} from '../components/Context/Cart.vendure'
+import {
+  GET_ACTIVE_ORDER,
+  REMOVE_ORDER_LINE,
+} from '../components/Context/Cart.vendure'
 
 const Moltin = require('../../lib/moltin')
 
@@ -18,6 +21,33 @@ const Cart = ({location}) => {
   const [meta, setMeta] = useState({})
   const [cartId, setCartId] = useState({})
   const {updateCartCount} = useContext(CartContext)
+  const [removeOrderLine, ...mutationStatus] = useMutation(REMOVE_ORDER_LINE, {
+    onCompleted: data => {
+      const itemsParsed = data.removeOrderLine.lines.map(i => {
+        return {
+          id: i.id,
+          product_id: i.productVariant.product.id,
+          name: i.productVariant.name,
+          quantity: i.quantity,
+          meta: (i.unitPrice / 100).toFixed(2),
+          image: i.featuredAsset.preview,
+        }
+      })
+      setItems(itemsParsed)
+      setMeta({
+        display_price: {
+          with_tax: {
+            amount: data.removeOrderLine.subTotalBeforeTax,
+            currency: data.removeOrderLine.currencyCode,
+            formatted: (data.removeOrderLine.subTotalBeforeTax / 100).toFixed(
+              2,
+            ),
+          },
+        },
+      })
+      updateCartCount(data.removeOrderLine.totalQuantity, cartId)
+    },
+  })
 
   useQuery(GET_ACTIVE_ORDER, {
     fetchPolicy: 'network-only',
@@ -90,12 +120,7 @@ const Cart = ({location}) => {
   }
 
   const handleRemoveFromCart = itemId => {
-    Moltin.removeFromCart(itemId, cartId).then(({data, meta}) => {
-      const total = data.reduce((a, c) => a + c.quantity, 0)
-      updateCartCount(total, cartId)
-      setItems(data)
-      setMeta(meta)
-    })
+    removeOrderLine({variables: {id: itemId}})
   }
 
   const rest = {completed, items, loading, cartId}

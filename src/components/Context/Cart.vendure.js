@@ -39,6 +39,15 @@ export const ADD_ITEM_TO_ORDER = gql`
   ${ORDER_FRAGMENT}
 `
 
+export const REMOVE_ORDER_LINE = gql`
+  mutation RemoveOrderLine($id: ID!) {
+    removeOrderLine(orderLineId: $id) {
+      ...ActiveOrder
+    }
+  }
+  ${ORDER_FRAGMENT}
+`
+
 export const GET_ACTIVE_ORDER = gql`
   {
     activeOrder {
