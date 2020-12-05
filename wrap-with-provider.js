@@ -1,4 +1,5 @@
 import {ApolloProvider} from '@apollo/react-hooks'
+import 'cross-fetch/polyfill'
 import ApolloClient, {InMemoryCache} from 'apollo-boost'
 
 import React from 'react'
