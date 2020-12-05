@@ -76,6 +76,7 @@ const AddToCart = ({productId, variants}) => {
       />
 
       <Input
+        fluid
         type="number"
         placeholder="Quantity"
         value={quantity}
