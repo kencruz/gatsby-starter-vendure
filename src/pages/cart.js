@@ -21,30 +21,33 @@ const Cart = ({location}) => {
   const [meta, setMeta] = useState({})
   const [cartId, setCartId] = useState({})
   const {updateCartCount} = useContext(CartContext)
-  const [removeOrderLine, ...mutationStatus] = useMutation(REMOVE_ORDER_LINE, {
-    onCompleted: data => {
-      const itemsParsed = data.removeOrderLine.lines.map(i => {
-        return {
-          id: i.id,
-          product_id: i.productVariant.product.id,
-          name: i.productVariant.name,
-          quantity: i.quantity,
-          meta: (i.unitPrice / 100).toFixed(2),
-          image: i.featuredAsset.preview,
-        }
-      })
-      setItems(itemsParsed)
-      setMeta({
-        display_price: {
-          with_tax: {
-            amount: data.removeOrderLine.subTotalBeforeTax,
-            currency: data.removeOrderLine.currencyCode,
-            formatted: (data.removeOrderLine.subTotalBeforeTax / 100).toFixed(
-              2,
-            ),
-          },
+
+  const parseData = data => {
+    const itemsParsed = data.lines.map(i => {
+      return {
+        id: i.id,
+        product_id: i.productVariant.product.id,
+        name: i.productVariant.name,
+        quantity: i.quantity,
+        meta: (i.unitPrice / 100).toFixed(2),
+        image: i.featuredAsset.preview,
+      }
+    })
+    setItems(itemsParsed)
+    setMeta({
+      display_price: {
+        with_tax: {
+          amount: data.subTotalBeforeTax,
+          currency: data.currencyCode,
+          formatted: (data.subTotalBeforeTax / 100).toFixed(2),
         },
-      })
+      },
+    })
+  }
+
+  const [removeOrderLine, ..._] = useMutation(REMOVE_ORDER_LINE, {
+    onCompleted: data => {
+      parseData(data.removeOrderLine)
       updateCartCount(data.removeOrderLine.totalQuantity, cartId)
     },
   })
@@ -53,26 +56,7 @@ const Cart = ({location}) => {
     fetchPolicy: 'network-only',
     onCompleted: ({activeOrder}) => {
       if (activeOrder) {
-        const itemsParsed = activeOrder.lines.map(i => {
-          return {
-            id: i.id,
-            product_id: i.productVariant.product.id,
-            name: i.productVariant.name,
-            quantity: i.quantity,
-            meta: (i.unitPrice / 100).toFixed(2),
-            image: i.featuredAsset.preview,
-          }
-        })
-        setItems(itemsParsed)
-        setMeta({
-          display_price: {
-            with_tax: {
-              amount: activeOrder.subTotalBeforeTax,
-              currency: activeOrder.currencyCode,
-              formatted: (activeOrder.subTotalBeforeTax / 100).toFixed(2),
-            },
-          },
-        })
+        parseData(activeOrder)
       }
       setLoading(false)
     },
