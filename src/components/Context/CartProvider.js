@@ -1,9 +1,15 @@
 import React, {useState, useEffect} from 'react'
+import {useQuery} from '@apollo/react-hooks'
 import CartContext from './CartContext'
+import {GET_ACTIVE_ORDER} from './Cart.vendure'
 
 const CartProvider = ({children}) => {
   const [cartId, setCartId] = useState(null)
   const [cartCount, setCartCount] = useState(0)
+  const {data, error, loading} = useQuery(GET_ACTIVE_ORDER, {
+    onCompleted: () =>
+      setCartCount(data.activeOrder ? data.activeOrder.totalQuantity : 0),
+  })
 
   const addToCart = (quantity, cartId) => {
     const cartCountResult = Number(cartCount) + Number(quantity)
@@ -33,10 +39,6 @@ const CartProvider = ({children}) => {
       localStorage.setItem('mcart', cartId)
       localStorage.setItem('mdata', JSON.stringify({cartId, cartCount: 0}))
       setCartId(cartId)
-    } else {
-      const data = localStorage.getItem('mdata')
-      const parsedData = JSON.parse(data)
-      setCartCount(parsedData.cartCount || 0)
     }
   }, [])
 

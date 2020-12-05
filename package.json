@@ -7,8 +7,11 @@
     "url": "https://github.com/parmsang/gatsby-starter-ecommerce"
   },
   "dependencies": {
+    "@apollo/react-hooks": "^4.0.0",
     "@moltin/gatsby-source-moltin": "^1.6.1",
     "@moltin/sdk": "^3.23.0",
+    "apollo-boost": "^0.3.1",
+    "apollo-client": "^2.6.10",
     "babel-jest": "^24.9.0",
     "babel-preset-gatsby": "^0.2.11",
     "eslint-plugin-jest": "^22.16.0",

@@ -1,10 +1,16 @@
 /* eslint-disable camelcase */
-import React, {useState, useContext, useEffect} from 'react'
+import React, {useState, useContext} from 'react'
+import {useQuery, useMutation} from '@apollo/react-hooks'
 import SEO from '../components/SEO'
 import CartItemList from '../components/CartItemList'
 import CartSummary from '../components/CartSummary'
 import CartContext from '../components/Context/CartContext'
 import Layout from '../components/Layout'
+
+import {
+  GET_ACTIVE_ORDER,
+  REMOVE_ORDER_LINE,
+} from '../components/Context/Cart.vendure'
 
 const Moltin = require('../../lib/moltin')
 
@@ -16,19 +22,45 @@ const Cart = ({location}) => {
   const [cartId, setCartId] = useState({})
   const {updateCartCount} = useContext(CartContext)
 
-  async function getCartItems() {
-    const cartIdLocal = await localStorage.getItem('mcart')
-    await Moltin.getCartItems(cartIdLocal).then(({data, meta}) => {
-      setItems(data)
-      setCartId(cartIdLocal)
-      setMeta(meta)
-      setLoading(false)
+  const parseData = data => {
+    const itemsParsed = data.lines.map(i => {
+      return {
+        id: i.id,
+        product_id: i.productVariant.product.id,
+        name: i.productVariant.name,
+        quantity: i.quantity,
+        meta: (i.unitPrice / 100).toFixed(2),
+        image: i.featuredAsset.preview,
+      }
+    })
+    setItems(itemsParsed)
+    setMeta({
+      display_price: {
+        with_tax: {
+          amount: data.subTotalBeforeTax,
+          currency: data.currencyCode,
+          formatted: (data.subTotalBeforeTax / 100).toFixed(2),
+        },
+      },
     })
   }
 
-  useEffect(() => {
-    getCartItems()
-  }, [])
+  const [removeOrderLine, ..._] = useMutation(REMOVE_ORDER_LINE, {
+    onCompleted: data => {
+      parseData(data.removeOrderLine)
+      updateCartCount(data.removeOrderLine.totalQuantity, cartId)
+    },
+  })
+
+  useQuery(GET_ACTIVE_ORDER, {
+    fetchPolicy: 'network-only',
+    onCompleted: ({activeOrder}) => {
+      if (activeOrder) {
+        parseData(activeOrder)
+      }
+      setLoading(false)
+    },
+  })
 
   const handleCheckout = async data => {
     const cartId = await localStorage.getItem('mcart')
@@ -72,12 +104,7 @@ const Cart = ({location}) => {
   }
 
   const handleRemoveFromCart = itemId => {
-    Moltin.removeFromCart(itemId, cartId).then(({data, meta}) => {
-      const total = data.reduce((a, c) => a + c.quantity, 0)
-      updateCartCount(total, cartId)
-      setItems(data)
-      setMeta(meta)
-    })
+    removeOrderLine({variables: {id: itemId}})
   }
 
   const rest = {completed, items, loading, cartId}
