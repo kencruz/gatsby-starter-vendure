@@ -17,22 +17,16 @@ Install this starter (assuming Gatsby is installed) by running from your CLI:
 
 ### Additional Setup
 
-Both a vendure server and Stripe account are needed for this store to run successfully.
-
-Create a `.env.development` and `.env.production` file at the project root with your Stripe test `publishable key`.
-
-```dosini
-STRIPE_PUBLISHABLE_KEY=
-```
+A vendure server is needed for this store to run successfully. This starter will default point to the demo shop api.
 
 ## Features
 
-- Vendure eCommerce API
-- React 16
-- PWA (includes manifest.webmanifest & offline support)
-- Eslint & Prettier
-- Styled Components
-- Google Analytics - (you enter the tracking-id)
-- Semantic-UI
-- Authentication via Vendure (Login and Register)
-- Stripe checkout
+  - [x] Vendure eCommerce API
+  - [x] React 16
+  - [x] PWA (includes manifest.webmanifest & offline support)
+  - [x] Eslint & Prettier
+  - [x] Styled Components
+  - [x] Google Analytics - (you enter the tracking-id)
+  - [x] Semantic-UI
+  - [ ] Authentication via Vendure (Login and Register)
+  - [ ] Stripe checkout
