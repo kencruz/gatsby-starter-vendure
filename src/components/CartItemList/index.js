@@ -25,8 +25,8 @@ export default ({items, removeFromCart, loading, completed}) => {
     )
   const mapCartItemsToItems = items =>
     items.map(({id, product_id, name, quantity, meta, image}) => {
-      const price = meta.display_price.with_tax.unit.formatted || ''
-      const imageUrl = image.href || '/static/moltin-light-hex.svg'
+      const price = meta
+      const imageUrl = `${image}?w=400&h=400&mode=crop`
 
       const DesktopItemImage = () => (
         <Item.Image
@@ -53,13 +53,13 @@ export default ({items, removeFromCart, loading, completed}) => {
           </Item.Header>
         ),
         image: (
-          <React.Fragment>
+          <>
             <Responsive as={MobileItemImage} {...Responsive.onlyMobile} />
             <Responsive
               as={DesktopItemImage}
               minWidth={Responsive.onlyTablet.minWidth}
             />
-          </React.Fragment>
+          </>
         ),
         meta: `${quantity}x ${price}`,
         description: 'Some more information goes here....',

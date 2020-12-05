@@ -1,10 +1,13 @@
 /* eslint-disable camelcase */
-import React, {useState, useContext, useEffect} from 'react'
+import React, {useState, useContext} from 'react'
+import {useQuery} from '@apollo/react-hooks'
 import SEO from '../components/SEO'
 import CartItemList from '../components/CartItemList'
 import CartSummary from '../components/CartSummary'
 import CartContext from '../components/Context/CartContext'
 import Layout from '../components/Layout'
+
+import {GET_ACTIVE_ORDER} from '../components/Context/Cart.vendure'
 
 const Moltin = require('../../lib/moltin')
 
@@ -16,19 +19,34 @@ const Cart = ({location}) => {
   const [cartId, setCartId] = useState({})
   const {updateCartCount} = useContext(CartContext)
 
-  async function getCartItems() {
-    const cartIdLocal = await localStorage.getItem('mcart')
-    await Moltin.getCartItems(cartIdLocal).then(({data, meta}) => {
-      setItems(data)
-      setCartId(cartIdLocal)
-      setMeta(meta)
+  useQuery(GET_ACTIVE_ORDER, {
+    fetchPolicy: 'network-only',
+    onCompleted: ({activeOrder}) => {
+      if (activeOrder) {
+        const itemsParsed = activeOrder.lines.map(i => {
+          return {
+            id: i.id,
+            product_id: i.productVariant.product.id,
+            name: i.productVariant.name,
+            quantity: i.quantity,
+            meta: (i.unitPrice / 100).toFixed(2),
+            image: i.featuredAsset.preview,
+          }
+        })
+        setItems(itemsParsed)
+        setMeta({
+          display_price: {
+            with_tax: {
+              amount: activeOrder.subTotalBeforeTax,
+              currency: activeOrder.currencyCode,
+              formatted: (activeOrder.subTotalBeforeTax / 100).toFixed(2),
+            },
+          },
+        })
+      }
       setLoading(false)
-    })
-  }
-
-  useEffect(() => {
-    getCartItems()
-  }, [])
+    },
+  })
 
   const handleCheckout = async data => {
     const cartId = await localStorage.getItem('mcart')
