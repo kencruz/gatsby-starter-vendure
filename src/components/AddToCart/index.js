@@ -1,6 +1,8 @@
 import React, {useState, useContext} from 'react'
 import {Dropdown, Input, Icon, Transition} from 'semantic-ui-react'
+import {useMutation} from '@apollo/react-hooks'
 import CartContext from '../Context/CartContext'
+import {ADD_ITEM_TO_ORDER} from '../Context/Cart.vendure'
 
 const Moltin = require('../../../lib/moltin')
 
@@ -17,6 +19,16 @@ const AddToCart = ({productId, variants}) => {
     }, 1000)
   }
 
+  const [addItemToOrder, ...mutationStatus] = useMutation(ADD_ITEM_TO_ORDER, {
+    onCompleted: async () => {
+      const cartId = await localStorage.getItem('mcart')
+      addToCart(quantity, cartId)
+      setVisible(true)
+      toggleMessage()
+      setLoading(false)
+    },
+  })
+
   const varientOptions = variants.map(v => {
     return {
       key: v.id,
@@ -24,6 +36,8 @@ const AddToCart = ({productId, variants}) => {
       value: v.id,
     }
   })
+
+  const [variantId, setVariantId] = useState(varientOptions[0].value)
 
   const validate = quantity => {
     let error
@@ -42,26 +56,19 @@ const AddToCart = ({productId, variants}) => {
     setError(error)
     if (!error) {
       setLoading(true)
-      Moltin.addToCart(cartId, productId, quantity)
-        .then(() => {
-          addToCart(quantity, cartId)
-          setLoading(false)
-          setQuantity(quantity)
-          setVisible(true)
-          toggleMessage()
-        })
-        .catch(err => {
-          setError(`Error: ${err.errors[0].detail}` || 'Something went wrong')
-          setLoading(false)
-        })
+      addItemToOrder({
+        variables: {productVariantId: variantId, quantity: Number(quantity)},
+      })
     }
   }
 
-  const handleChange = ({target: {value}}) => setQuantity(value)
+  const handleQuantityChange = ({target: {value}}) => setQuantity(value)
+  const handleVarientChange = (e, {value}) => setVariantId(value)
 
   return (
     <>
       <Dropdown
+        onChange={handleVarientChange}
         placeholder="Select Varient"
         selection
         options={varientOptions}
@@ -75,7 +82,7 @@ const AddToCart = ({productId, variants}) => {
         min={1}
         step={1}
         error={!!error}
-        onChange={handleChange}
+        onChange={handleQuantityChange}
         action={{
           color: 'orange',
           content: 'Add to Cart',
