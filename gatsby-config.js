@@ -19,7 +19,7 @@ module.exports = {
         // This is field under which it's accessible
         fieldName: 'vendure',
         // Url to query from
-        url: 'https://demo.vendure.io/shop-api',
+        url: process.env.VENDURE_SHOP_API,
       },
     },
     {

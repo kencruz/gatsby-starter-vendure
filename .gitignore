@@ -37,3 +37,5 @@ public
 cypress/videos
 cypress/screenshots
 .env
+.env.development
+.env.production
