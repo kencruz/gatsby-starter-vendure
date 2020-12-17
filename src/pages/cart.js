@@ -116,7 +116,7 @@ const Cart = ({location}) => {
         {...rest}
         removeFromCart={item => handleRemoveFromCart(item)}
       />
-      {!loading && !completed && (
+      {!loading && !completed && items.length > 0 && (
         <CartSummary {...meta} handleCheckout={handleCheckout} />
       )}
     </Layout>
