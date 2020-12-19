@@ -1,6 +1,5 @@
 import {gql} from 'apollo-boost'
 
-// eslint-disable-next-line import/prefer-default-export
 export const AUTHENTICATE_USER = gql`
   mutation Login($username: String!, $password: String!) {
     login(username: $username, password: $password) {
@@ -13,6 +12,14 @@ export const AUTHENTICATE_USER = gql`
         message
         errorCode
       }
+    }
+  }
+`
+
+export const LOGOUT_USER = gql`
+  mutation Logout {
+    logout {
+      success
     }
   }
 `
