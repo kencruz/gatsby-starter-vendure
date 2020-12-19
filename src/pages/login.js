@@ -4,30 +4,39 @@
 import React, {useState, useContext} from 'react'
 import {navigate} from 'gatsby'
 import {Header, Form, Input, Button, Segment, Message} from 'semantic-ui-react'
+import {useQuery, useMutation} from '@apollo/react-hooks'
 import SEO from '../components/SEO'
 import {login} from '../../lib/moltin'
 import AuthContext from '../components/Context/AuthContext'
 import Layout from '../components/Layout'
 import useForm from '../components/Hooks/useForm'
 
+import {AUTHENTICATE_USER} from '../components/Context/Auth.vendure'
+
 const LoginPage = ({location}) => {
   const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState([])
   const {updateToken} = useContext(AuthContext)
 
-  const formLogin = () => {
-    setLoading(true)
-    login({email: values.email, password: values.password})
-      .then(({id, token}) => {
-        localStorage.setItem('customerToken', token)
-        localStorage.setItem('mcustomer', id)
+  const [authenticateUser, ..._] = useMutation(AUTHENTICATE_USER, {
+    onCompleted: ({login}) => {
+      if (login.errorCode) {
+        setApiError(login.message || login.errorCode)
+      } else {
+        localStorage.setItem('customerToken', login.id)
+        localStorage.setItem('mcustomer', login.id)
         updateToken()
         navigate('/myaccount/')
-      })
-      .catch(e => {
-        setLoading(false)
-        setApiError(e.errors || e)
-      })
+      }
+      setLoading(false)
+    },
+  })
+
+  const formLogin = () => {
+    setLoading(true)
+    authenticateUser({
+      variables: {username: values.email, password: values.password},
+    })
   }
   const {values, handleChange, handleSubmit, errors} = useForm(
     formLogin,
