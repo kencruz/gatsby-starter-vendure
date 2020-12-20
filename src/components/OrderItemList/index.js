@@ -25,14 +25,14 @@ export default ({orders, loading}) => {
       {orders.map(order => {
         const {
           id,
-          billing_address,
-          shipping_address,
-          status,
-          meta,
-          order_items,
+          billingAddress,
+          shippingAddress,
+          active,
+          total,
+          lines,
         } = order
-        const completed = status === 'complete'
-        const price = meta.display_price.with_tax.formatted
+        const completed = active === false
+        const price = total
 
         return (
           <Segment.Group key={id}>
@@ -41,41 +41,37 @@ export default ({orders, loading}) => {
               <Label
                 icon={completed ? 'check' : null}
                 color={completed ? 'green' : null}
-                content={status.toUpperCase()}
+                content={active ? 'ACTIVE' : 'COMPLETED'}
               />
-              <pre>{JSON.stringify(order_items, '\t', 2)}</pre>
+              <pre>{JSON.stringify(lines, '\t', 2)}</pre>
             </Segment>
             <Segment.Group horizontal>
               <Segment>
                 <Header as="h4">Billing address:</Header>
                 <p>
-                  {billing_address.line_1}
+                  {billingAddress.streetLine1}
                   <br />
-                  {billing_address.line_2}
+                  {billingAddress.streetLine2}
                   <br />
-                  {billing_address.city}
+                  {billingAddress.city}
                   <br />
-                  {billing_address.postcode}
+                  {billingAddress.postalCode}
                   <br />
-                  {billing_address.county}
-                  <br />
-                  {billing_address.country}
+                  {billingAddress.country}
                 </p>
               </Segment>
               <Segment>
                 <Header as="h4">Shipping address:</Header>
                 <p>
-                  {shipping_address.line_1}
+                  {shippingAddress.streetLine1}
                   <br />
-                  {shipping_address.line_2}
+                  {shippingAddress.streetLine2}
                   <br />
-                  {shipping_address.city}
+                  {shippingAddress.city}
                   <br />
-                  {shipping_address.postcode}
+                  {shippingAddress.postalCode}
                   <br />
-                  {shipping_address.county}
-                  <br />
-                  {shipping_address.country}
+                  {shippingAddress.country}
                 </p>
               </Segment>
             </Segment.Group>
