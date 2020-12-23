@@ -47,6 +47,11 @@ export const AUTHENTICATE_USER = gql`
         message
         errorCode
       }
+      ... on NotVerifiedError {
+        __typename
+        errorCode
+        message
+      }
     }
   }
 `
