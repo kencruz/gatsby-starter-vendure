@@ -4,9 +4,8 @@
 import React, {useState, useContext} from 'react'
 import {navigate} from 'gatsby'
 import {Header, Form, Input, Button, Segment, Message} from 'semantic-ui-react'
-import {useQuery, useMutation} from '@apollo/react-hooks'
+import {useMutation} from '@apollo/react-hooks'
 import SEO from '../components/SEO'
-import {login} from '../../lib/moltin'
 import AuthContext from '../components/Context/AuthContext'
 import Layout from '../components/Layout'
 import useForm from '../components/Hooks/useForm'
@@ -49,7 +48,7 @@ const LoginPage = ({location}) => {
         <Message
           error
           header="Sorry"
-          content="Please check your login details and try again."
+          content="A verified email and/or password does not match our records. Please check your login details and try again."
         />
       )
     }

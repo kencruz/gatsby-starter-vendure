@@ -43,9 +43,48 @@ export const AUTHENTICATE_USER = gql`
         identifier
       }
       ... on InvalidCredentialsError {
+        __typename
         authenticationError
         message
         errorCode
+      }
+      ... on NotVerifiedError {
+        __typename
+        errorCode
+        message
+      }
+    }
+  }
+`
+
+export const REGISTER_USER = gql`
+  mutation RegisterCustomerAccount(
+    $emailAddress: String!
+    $firstName: String!
+    $lastName: String!
+    $password: String!
+  ) {
+    registerCustomerAccount(
+      input: {
+        emailAddress: $emailAddress
+        firstName: $firstName
+        lastName: $lastName
+        password: $password
+      }
+    ) {
+      ... on Success {
+        __typename
+        success
+      }
+      ... on MissingPasswordError {
+        __typename
+        errorCode
+        message
+      }
+      ... on NativeAuthStrategyError {
+        __typename
+        errorCode
+        message
       }
     }
   }
