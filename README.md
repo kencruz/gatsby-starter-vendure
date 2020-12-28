@@ -41,5 +41,5 @@ VENDURE_SHOP_API=
 - [x] Styled Components
 - [x] Google Analytics - (you enter the tracking-id)
 - [x] Semantic-UI
-- [ ] Authentication via Vendure (Login and Register)
+- [x] Authentication via Vendure (Login and Register)
 - [ ] Stripe checkout
