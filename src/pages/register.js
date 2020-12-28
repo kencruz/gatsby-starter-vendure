@@ -1,39 +1,44 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable no-use-before-define */
 
-import React, {useState, useContext} from 'react'
-import {navigate} from 'gatsby'
+import React, {useState} from 'react'
 import {Header, Form, Input, Button, Segment, Message} from 'semantic-ui-react'
+import {useMutation} from '@apollo/react-hooks'
 import SEO from '../components/SEO'
-import AuthContext from '../components/Context/AuthContext'
-import {register} from '../../lib/moltin'
+import {REGISTER_USER} from '../components/Context/Auth.vendure'
 import Layout from '../components/Layout'
 import useForm from '../components/Hooks/useForm'
 
 const Register = ({location}) => {
   const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState([])
-  const {updateToken} = useContext(AuthContext)
+  const [apiSuccess, setApiSuccess] = useState(false)
+
+  const [registerUser, ..._] = useMutation(REGISTER_USER, {
+    onCompleted: () => {
+      setApiSuccess(true)
+    },
+    onError: e => {
+      const errors = {
+        key: e.registerCustomerAccount.errorCode,
+        title: e.registerCustomerAccount.__typename,
+        detail: e.registerCustomerAccount.message,
+      }
+      setApiError(errors)
+    },
+  })
 
   const formRegister = () => {
     setLoading(true)
-    register({
-      name: values.name,
-      email: values.email,
-      password: values.password,
+    registerUser({
+      variables: {
+        emailAddress: values.email,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        password: values.password,
+      },
     })
-      .then(data => {
-        const {id, token} = data
-        localStorage.setItem('customerToken', token)
-        localStorage.setItem('mcustomer', id)
-        updateToken()
-        navigate('/myaccount/')
-      })
-      .catch(e => {
-        console.log(e)
-        setLoading(false)
-        setApiError(e.errors || e)
-      })
+    setLoading(false)
   }
 
   const {values, handleChange, handleSubmit, errors} = useForm(
@@ -52,22 +57,48 @@ const Register = ({location}) => {
     ))
   }
 
+  const handleSuccess = () => {
+    return (
+      <Message
+        positive
+        header="Success!"
+        content="Account is registered. Please verify by clicking the activation link sent to your email."
+      />
+    )
+  }
+
   return (
     <Layout location={location}>
       <SEO title="Register" />
       <Header as="h1">Create an account</Header>
       <Form onSubmit={handleSubmit} loading={loading} error={!!errors}>
-        {apiError.length !== 0 ? handleErrors(errors) : null}
+        {apiError.length !== 0 ? handleErrors(apiError) : null}
+        {apiSuccess ? handleSuccess() : null}
         <Segment>
           <Form.Field>
-            <label htmlFor="name">Name</label>
+            <label htmlFor="firstName">First name</label>
             <Input
-              id="name"
+              id="firstName"
+              disabled={apiSuccess}
               fluid
-              name="name"
+              name="firstName"
               autoFocus
               onChange={handleChange}
-              value={values.name || ''}
+              value={values.firstName || ''}
+            />
+          </Form.Field>
+          {errors.firstName && <p style={{color: 'red'}}>{errors.firstName}</p>}
+
+          <Form.Field>
+            <label htmlFor="name">Last name</label>
+            <Input
+              id="lastName"
+              disabled={apiSuccess}
+              fluid
+              name="lastName"
+              autoFocus
+              onChange={handleChange}
+              value={values.lastName || ''}
             />
           </Form.Field>
           {errors.name && <p style={{color: 'red'}}>{errors.name}</p>}
@@ -76,6 +107,7 @@ const Register = ({location}) => {
             <label htmlFor="email">Email</label>
             <Input
               id="email"
+              disabled={apiSuccess}
               fluid
               name="email"
               type="email"
@@ -88,6 +120,7 @@ const Register = ({location}) => {
             <label htmlFor="password">Password</label>
             <Input
               id="password"
+              disabled={apiSuccess}
               fluid
               name="password"
               type="password"
@@ -96,7 +129,7 @@ const Register = ({location}) => {
             />
           </Form.Field>
           {errors.password && <p style={{color: 'red'}}>{errors.password}</p>}
-          <Button type="submit" color="orange">
+          <Button disabled={apiSuccess} type="submit" color="orange">
             Register
           </Button>
         </Segment>
@@ -117,8 +150,11 @@ const validate = values => {
   if (!values.password) {
     errors.password = 'Password is required'
   }
-  if (!values.name) {
-    errors.name = 'A name is required'
+  if (!values.firstName) {
+    errors.firstName = 'A first name is required'
+  }
+  if (!values.lastName) {
+    errors.lastName = 'A name is required'
   }
   return errors
 }
